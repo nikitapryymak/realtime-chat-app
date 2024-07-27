@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" class="sl-theme-dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat Room: The Boys</title>
+
+    <link rel="stylesheet" href="index.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/themes/dark.css"
+    />
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/shoelace-autoloader.js"
+    ></script>
+    <script src="index.js" defer></script>
+  </head>
+  <body>
+    <sl-card style="width: 500px">
+      <h1 slot="header">Chat Room: Gang Activity</h1>
+      <div id="connect-container">
+        <sl-input
+          id="username-input"
+          filled
+          placeholder="Enter your username"
+        ></sl-input
+        ><br />
+        <sl-button id="connect-btn" variant="primary">Connect</sl-button>
+      </div>
+      <div id="chat-container">
+        <div id="messages"></div>
+        <sl-input id="message-input" filled placeholder="Type your message">
+          <sl-icon id="send-btn" name="send" slot="suffix"></sl-icon
+        ></sl-input>
+      </div>
+    </sl-card>
+  </body>
+</html>

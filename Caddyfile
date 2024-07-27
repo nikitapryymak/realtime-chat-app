@@ -1,0 +1,20 @@
+
+:80 {
+    encode gzip
+
+    handle_path /ws* {
+        reverse_proxy ws1:4001 ws2:4002 ws3:4003 {
+            lb_policy round_robin
+            header_up Host {host}
+            header_up X-Real-IP {remote}
+            header_up X-Forwarded-For {remote}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    handle {
+        root * /srv
+        try_files {path} /index.html
+        file_server
+    }
+}

@@ -1,5 +1,5 @@
 
-FROM node:20-bookworm-slim
+FROM node:20-alpine
 
 WORKDIR /app
 
