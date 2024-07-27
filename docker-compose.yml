@@ -1,0 +1,53 @@
+name: node-websockets
+
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  ws1:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    environment:
+      - PORT=4001
+    ports:
+      - "4001:4001"
+    restart: unless-stopped
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    depends_on:
+      - redis
+
+  ws2:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    environment:
+      - PORT=4002
+    ports:
+      - "4002:4002"
+    restart: unless-stopped
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    depends_on:
+      - redis
+
+  ws3:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    environment:
+      - PORT=4003
+    ports:
+      - "4003:4003"
+    restart: unless-stopped
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    depends_on:
+      - redis

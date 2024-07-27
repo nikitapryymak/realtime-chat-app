@@ -112,7 +112,7 @@
           return;
         }
 
-        ws = new WebSocket("ws://localhost:8080");
+        ws = new WebSocket("ws://localhost:4001");
 
         ws.addEventListener("open", () => {
           console.log("WebSocket connection established");
@@ -124,6 +124,8 @@
         ws.addEventListener("close", () => {
           console.log("WebSocket connection closed");
           addSystemMessage("Disconnected from chat room");
+          // try to reconnect
+          setTimeout(connectToChat, 1000);
         });
 
         ws.addEventListener("error", () => {
@@ -133,6 +135,7 @@
 
         ws.addEventListener("message", (event) => {
           const message = JSON.parse(event.data);
+          console.log("received message", message);
           addMessage(message);
         });
       }
