@@ -9,39 +9,39 @@ services:
 
   ws1:
     build:
-      context: ./
+      context: ./server
       dockerfile: Dockerfile
     environment:
       - PORT=4001
     restart: unless-stopped
     volumes:
-      - ./:/app
+      - ./server:/app
       - /app/node_modules
     depends_on:
       - redis
 
   ws2:
     build:
-      context: ./
+      context: ./server
       dockerfile: Dockerfile
     environment:
       - PORT=4002
     restart: unless-stopped
     volumes:
-      - ./:/app
+      - ./server:/app
       - /app/node_modules
     depends_on:
       - redis
 
   ws3:
     build:
-      context: ./
+      context: ./server
       dockerfile: Dockerfile
     environment:
       - PORT=4003
     restart: unless-stopped
     volumes:
-      - ./:/app
+      - ./server:/app
       - /app/node_modules
     depends_on:
       - redis

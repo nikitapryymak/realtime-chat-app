@@ -11,6 +11,7 @@ interface ChatMessage {
   user: string;
   content: string;
   timestamp: number;
+  server: number;
 }
 
 // Create WebSocket server
@@ -51,6 +52,7 @@ wss.on("connection", (ws: WebSocket) => {
         user,
         content,
         timestamp: Date.now(),
+        server: PORT,
       };
 
       console.log("Publishing message:", chatMessage);
