@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chat Room: The Boys</title>
+    <title>Chat App</title>
 
     <link rel="stylesheet" href="index.css" />
     <link
@@ -29,6 +29,14 @@
         <sl-button id="connect-btn" variant="primary">Connect</sl-button>
       </div>
       <div id="chat-container">
+        <sl-button
+          id="disconnect-btn"
+          variant="danger"
+          size="small"
+          outline
+          style="margin-bottom: 1rem"
+          >Leave</sl-button
+        >
         <div id="messages"></div>
         <sl-input id="message-input" filled placeholder="Type your message">
           <sl-icon id="send-btn" name="send" slot="suffix"></sl-icon

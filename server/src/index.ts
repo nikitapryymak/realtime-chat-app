@@ -4,15 +4,32 @@ import Redis from "ioredis";
 
 const PORT = parseInt(`${process.env.PORT}`, 10) || 4000;
 const REDIS_URL = "redis://redis:6379";
-const CHAT_CHANNEL = "chat:messages";
+const CHAT_CHANNEL = "chat:default";
 
-interface ChatMessage {
+const throwError = (message: string) => {
+  throw new Error(message);
+};
+
+const enum MessageType {
+  Message = "message",
+  Event = "event",
+}
+
+type ChatMessage = {
   id: string;
+  type: MessageType.Message;
   user: string;
   content: string;
   timestamp: number;
   server: number;
-}
+};
+
+type ChatEvent = {
+  type: MessageType.Event;
+  action: "joined" | "left";
+  user: string;
+  timestamp: number;
+};
 
 // Create WebSocket server
 const wss = new WebSocket.Server({ port: PORT });
@@ -46,18 +63,23 @@ wss.on("connection", (ws: WebSocket) => {
 
   ws.on("message", (message: string) => {
     try {
-      const { user, content } = JSON.parse(message);
-      const chatMessage: ChatMessage = {
-        id: randomUUID(),
-        user,
-        content,
-        timestamp: Date.now(),
-        server: PORT,
-      };
+      const { type, action, user, content } = JSON.parse(message);
+      const messageOrEvent: ChatMessage | ChatEvent =
+        type === MessageType.Message
+          ? {
+              id: randomUUID(),
+              type,
+              user,
+              content,
+              timestamp: Date.now(),
+              server: PORT,
+            }
+          : type === MessageType.Event
+          ? { type, action, user, timestamp: Date.now() }
+          : throwError("Invalid message type");
 
-      console.log("Publishing message:", chatMessage);
       // Publish message to Redis
-      publisher.publish(CHAT_CHANNEL, JSON.stringify(chatMessage));
+      publisher.publish(CHAT_CHANNEL, JSON.stringify(messageOrEvent));
     } catch (error: any) {
       console.error("Failed to parse message:", error);
     }

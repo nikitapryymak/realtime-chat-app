@@ -6,9 +6,15 @@ const usernameInput = document.getElementById("username-input");
 const messageInput = document.getElementById("message-input");
 const connectBtn = document.getElementById("connect-btn");
 const sendBtn = document.getElementById("send-btn");
+const disconnectBtn = document.getElementById("disconnect-btn");
 
 connectBtn.addEventListener("click", connectToChat);
 sendBtn.addEventListener("click", sendMessage);
+disconnectBtn.addEventListener("click", disconnectFromChat);
+
+function thowError(message) {
+  throw new Error(message);
+}
 
 function connectToChat() {
   const username = usernameInput.value.trim();
@@ -23,12 +29,19 @@ function connectToChat() {
     console.log("WebSocket connection established");
     connectContainer.style.display = "none";
     chatContainer.style.display = "block";
-    addSystemMessage("Connected to chat room");
+
+    const chatEvent = {
+      type: "event",
+      action: "joined",
+      user: username,
+    };
+    ws.send(JSON.stringify(chatEvent));
   });
 
   ws.addEventListener("close", () => {
     console.log("WebSocket connection closed");
-    addSystemMessage("Disconnected from chat room");
+    connectContainer.style.display = "block";
+    chatContainer.style.display = "none";
   });
 
   ws.addEventListener("error", () => {
@@ -37,10 +50,28 @@ function connectToChat() {
   });
 
   ws.addEventListener("message", (event) => {
-    const message = JSON.parse(event.data);
-    console.log("received message", message);
-    addMessage(message);
+    try {
+      const message = JSON.parse(event.data);
+
+      message.type === "event"
+        ? handleChatEvent(message)
+        : message.type === "message"
+        ? handleChatMessage(message)
+        : thowError(`Unhandled message type: ${message.type}`);
+    } catch (error) {
+      console.log("Error recieving message", error);
+    }
   });
+}
+
+function disconnectFromChat() {
+  if (!ws) return;
+  const chatEvent = {
+    type: "event",
+    action: "left",
+    user: usernameInput.value.trim(),
+  };
+  ws.send(JSON.stringify(chatEvent));
 }
 
 function sendMessage() {
@@ -48,15 +79,16 @@ function sendMessage() {
   if (!content) return;
 
   const message = {
+    type: "message",
     user: usernameInput.value,
-    content: content,
+    content,
   };
 
   ws.send(JSON.stringify(message));
   messageInput.value = "";
 }
 
-function addMessage({ user, content }) {
+function handleChatMessage({ user, content }) {
   const isSentMessage = user === usernameInput.value;
 
   const messageElement = document.createElement("div");
@@ -64,29 +96,56 @@ function addMessage({ user, content }) {
     isSentMessage ? "message-sent" : "message-received"
   }`;
   messageElement.innerHTML = `
-            <div class="message-user">${user}</div>
-            <div class="message-content">${content}</div>
-        `;
+    <div class="message-user">${user}</div>
+    <div class="message-content">${content}</div>`;
   messagesContainer.appendChild(messageElement);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
   messageInput.focus();
 }
 
+function handleChatEvent({ user, action }) {
+  // handle "leave chat" event
+  if (user === usernameInput.value && action === "left") {
+    ws.close();
+    ws = null;
+    return;
+  }
+
+  const eventElement = document.createElement("div");
+  const actionText =
+    action === "joined"
+      ? "joined the chat"
+      : action === "left"
+      ? "left the chat"
+      : thowError(`Unhandled event action: ${action}`);
+  eventElement.innerHTML = `
+    <sl-alert open style="margin-bottom: 1rem;">
+    <sl-icon slot="icon" name="info-circle"></sl-icon>
+      <strong>${user}</strong> ${actionText}
+    </sl-alert>`;
+  messagesContainer.appendChild(eventElement);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
 function addSystemMessage(content) {
   const systemMsg = document.createElement("div");
   systemMsg.innerHTML = `
-            <sl-alert open style="margin-bottom: 1rem;">
-            <sl-icon slot="icon" name="info-circle"></sl-icon>
-                ${content}
-            </sl-alert>
-        `;
+    <sl-alert open style="margin-bottom: 1rem;">
+    <sl-icon slot="icon" name="info-circle"></sl-icon>
+        ${content}
+    </sl-alert>`;
   messagesContainer.appendChild(systemMsg);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Allow sending messages with Enter key
 messageInput.addEventListener("keypress", (event) => {
   if (event.key === "Enter") {
     sendMessage();
+  }
+});
+
+usernameInput.addEventListener("keypress", (event) => {
+  if (event.key === "Enter") {
+    connectToChat();
   }
 });
